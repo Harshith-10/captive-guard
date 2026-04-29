@@ -1,0 +1,29 @@
+{
+	"manifest_version": 3,
+	"name": "Captive Guard",
+	"version": "1.0.0",
+	"description": "Enforces a two-tab exam environment and monitors captive portal state.",
+	"permissions": ["tabs", "captivePortal", "storage", "webNavigation"],
+	"host_permissions": ["<all_urls>"],
+	"background": {
+		"scripts": ["src/background.js"],
+		"type": "module"
+	},
+	"content_scripts": [
+		{
+			"matches": ["*://172.16.0.254/*"],
+			"js": ["src/content/portal-observer.js"],
+			"run_at": "document_idle"
+		}
+	],
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "captive-guard@iare.ac.in",
+			"strict_min_version": "142.0",
+			"data_collection_permissions": {
+				"required": ["browsingActivity", "websiteContent", "websiteActivity"],
+				"optional": []
+			}
+		}
+	}
+}
