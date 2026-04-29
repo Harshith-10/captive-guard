@@ -175,6 +175,12 @@ async function checkInternet() {
 				state.isAuthenticated = true;
 				// Switch back to exam tab
 				await browser.tabs.update(state.examTabId, { active: true });
+				
+				if (!state.hasInitialLogin) {
+					state.hasInitialLogin = true;
+					await browser.tabs.reload(state.examTabId);
+				}
+				
 				await saveState();
 			}
 		} else {
@@ -203,6 +209,12 @@ browser.runtime.onMessage.addListener(async (message) => {
 		console.log("Portal authenticated via DOM check");
 		state.isAuthenticated = true;
 		await browser.tabs.update(state.examTabId, { active: true });
+		
+		if (!state.hasInitialLogin) {
+			state.hasInitialLogin = true;
+			await browser.tabs.reload(state.examTabId);
+		}
+		
 		await saveState();
 	}
 });

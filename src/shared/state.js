@@ -7,6 +7,7 @@ export const state = {
 	portalTabId: null,
 	lastExamUrl: EXAM_INITIAL_URL,
 	isAuthenticated: false,
+	hasInitialLogin: false,
 };
 
 export async function saveState() {
@@ -20,5 +21,6 @@ export async function loadState() {
 		state.portalTabId = data.extensionState.portalTabId;
 		state.lastExamUrl = data.extensionState.lastExamUrl || EXAM_INITIAL_URL;
 		state.isAuthenticated = data.extensionState.isAuthenticated || false;
+		state.hasInitialLogin = data.extensionState.hasInitialLogin || false;
 	}
 }

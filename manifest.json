@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Captive Guard",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Enforces a two-tab exam environment and monitors captive portal state.",
 	"permissions": ["tabs", "captivePortal", "storage", "webNavigation"],
 	"host_permissions": ["<all_urls>"],
