@@ -147,10 +147,12 @@ browser.tabs.onUpdated.addListener(async (tabId, changeInfo, _) => {
 			state.isAuthenticated = false;
 		} else {
 			// Valid navigation within the exam tab, update last known state
-			state.lastExamUrl = changeInfo.url;
-			await saveState();
+			// Only update and save if the URL actually changed to block redundant disk writes
+			if (state.lastExamUrl !== changeInfo.url) {
+				state.lastExamUrl = changeInfo.url;
+				await saveState();
+			}
 		}
-	}
 });
 
 // Captive portal API updates (Firefox specific)
