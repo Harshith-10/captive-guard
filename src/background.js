@@ -19,61 +19,61 @@ async function initTabs() {
 	try {
 		await loadState();
 
-	const allTabs = await browser.tabs.query({});
+		const allTabs = await browser.tabs.query({});
 
-	let foundPortalTab = null;
-	let foundExamTab = null;
+		let foundPortalTab = null;
+		let foundExamTab = null;
 
-	// Identify if we already have the required tabs
-	for (const tab of allTabs) {
-		const url = tab.url || tab.pendingUrl || "";
-		const isPortalUrl = url.includes("172.16.0.254");
-		const isExamUrl = url.includes("buildit.iare.ac.in");
+		// Identify if we already have the required tabs
+		for (const tab of allTabs) {
+			const url = tab.url || tab.pendingUrl || "";
+			const isPortalUrl = url.includes("172.16.0.254");
+			const isExamUrl = url.includes("buildit.iare.ac.in");
 
-		if (isPortalUrl && !foundPortalTab) {
-			foundPortalTab = tab;
-			state.portalTabId = tab.id;
-		} else if (isExamUrl && !foundExamTab) {
-			foundExamTab = tab;
-			state.examTabId = tab.id;
-		}
-	}
-
-	systemTabOperationsCount++;
-	try {
-		// Create missing tabs FIRST so we don't accidentally reach 0 tabs
-		if (!foundPortalTab) {
-			const portalTab = await browser.tabs.create({
-				url: PORTAL_URL,
-				active: !state.isAuthenticated,
-			});
-			state.portalTabId = portalTab.id;
-		}
-
-		if (!foundExamTab) {
-			const urlToLoad = state.lastExamUrl || EXAM_INITIAL_URL;
-			const examTab = await browser.tabs.create({
-				url: urlToLoad,
-				active: state.isAuthenticated,
-			});
-			state.examTabId = examTab.id;
-		}
-	} finally {
-		systemTabOperationsCount--;
-	}
-
-	await saveState();
-
-	// Now, safely close any tab that isn't our designated portal or exam tab
-	for (const tab of allTabs) {
-		if (tab.id !== state.portalTabId && tab.id !== state.examTabId) {
-			try {
-				await browser.tabs.remove(tab.id);
-			} catch (e) {
-				console.log("Failed to remove tab", e);
+			if (isPortalUrl && !foundPortalTab) {
+				foundPortalTab = tab;
+				state.portalTabId = tab.id;
+			} else if (isExamUrl && !foundExamTab) {
+				foundExamTab = tab;
+				state.examTabId = tab.id;
 			}
 		}
-	}
+
+		systemTabOperationsCount++;
+		try {
+			// Create missing tabs FIRST so we don't accidentally reach 0 tabs
+			if (!foundPortalTab) {
+				const portalTab = await browser.tabs.create({
+					url: PORTAL_URL,
+					active: !state.isAuthenticated,
+				});
+				state.portalTabId = portalTab.id;
+			}
+
+			if (!foundExamTab) {
+				const urlToLoad = state.lastExamUrl || EXAM_INITIAL_URL;
+				const examTab = await browser.tabs.create({
+					url: urlToLoad,
+					active: state.isAuthenticated,
+				});
+				state.examTabId = examTab.id;
+			}
+		} finally {
+			systemTabOperationsCount--;
+		}
+
+		await saveState();
+
+		// Now, safely close any tab that isn't our designated portal or exam tab
+		for (const tab of allTabs) {
+			if (tab.id !== state.portalTabId && tab.id !== state.examTabId) {
+				try {
+					await browser.tabs.remove(tab.id);
+				} catch (e) {
+					console.log("Failed to remove tab", e);
+				}
+			}
+		}
 	} finally {
 		isInitializing = false;
 	}
@@ -145,10 +145,13 @@ browser.tabs.onUpdated.addListener(async (tabId, changeInfo, _) => {
 			await browser.tabs.update(state.examTabId, { url: state.lastExamUrl });
 			await browser.tabs.update(state.portalTabId, { active: true });
 			state.isAuthenticated = false;
+		} else if (changeInfo.url.includes("buildit.iare.ac.in")) {
+			if (state.lastExamUrl !== changeInfo.url) {
+				state.lastExamUrl = changeInfo.url;
+				await saveState();
+			}
 		} else {
-			// Valid navigation within the exam tab, update last known state
-			state.lastExamUrl = changeInfo.url;
-			await saveState();
+			await browser.tabs.update(state.examTabId, { url: state.lastExamUrl });
 		}
 	}
 });
@@ -175,12 +178,12 @@ async function checkInternet() {
 				state.isAuthenticated = true;
 				// Switch back to exam tab
 				await browser.tabs.update(state.examTabId, { active: true });
-				
+
 				if (!state.hasInitialLogin) {
 					state.hasInitialLogin = true;
 					await browser.tabs.reload(state.examTabId);
 				}
-				
+
 				await saveState();
 			}
 		} else {
@@ -209,12 +212,12 @@ browser.runtime.onMessage.addListener(async (message) => {
 		console.log("Portal authenticated via DOM check");
 		state.isAuthenticated = true;
 		await browser.tabs.update(state.examTabId, { active: true });
-		
+
 		if (!state.hasInitialLogin) {
 			state.hasInitialLogin = true;
 			await browser.tabs.reload(state.examTabId);
 		}
-		
+
 		await saveState();
 	}
 });

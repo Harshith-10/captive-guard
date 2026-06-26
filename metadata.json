@@ -1,18 +1,15 @@
 {
-  "version": {
-    "license": "all-rights-reserved"
-  },
-  "categories": {
-    "firefox": [
-      "productivity",
-      "tabs"
-    ]
-  },
-  "requires_payment": false,
-  "homepage": {
-    "en-US": "https://github.com/Harshith-10"
-  },
-  "support_email": {
-    "en-US": "harshith.doddipalli@outlook.com"
-  }
+	"version": {
+		"license": "all-rights-reserved"
+	},
+	"categories": {
+		"firefox": ["productivity", "tabs"]
+	},
+	"requires_payment": false,
+	"homepage": {
+		"en-US": "https://github.com/Harshith-10"
+	},
+	"support_email": {
+		"en-US": "harshith.doddipalli@outlook.com"
+	}
 }
